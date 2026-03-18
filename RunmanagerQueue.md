@@ -10,6 +10,8 @@
 - Move authoritative shot queue ownership from BLACS into runmanager.
 - BLACS becomes a shot executor that requests the next shot from runmanager, validates the returned file, acknowledges receipt, and then executes it.
 - Keep BLACS direct load, but reduce it to a single local override shot instead of a BLACS-side queue.
+- Move lyse communication ownership from BLACS into runmanager.
+- BLACS buffers completed-shot notifications to runmanager at runtime and retries delivery if runmanager is temporarily unavailable.
 - Change canonical runmanager globals storage from HDF5 to TOML.
 - Keep legacy HDF5 globals readable as import-only migration sources.
 - Extract the reusable queue editor into `labscript_utils.qtwidgets` as a code-only widget.
@@ -37,6 +39,7 @@
   - executor/pull client
   - single local direct-load override shot
   - fallback repeat
+  - buffered shot-complete notifications back to runmanager
   - plugin compatibility surface and plugin updates
 
 ## Execution Order
@@ -116,9 +119,13 @@
   - pause/abort/status state
   - one local direct-load override shot
   - fallback repeat state
+- Keep a runtime-only buffer of completed-shot notifications waiting to be delivered to runmanager.
 - BLACS direct load becomes single-shot local override only.
 - When idle, BLACS requests the next shot from runmanager, validates the file, acknowledges receipt, then executes it.
 - If runmanager is empty or unreachable, BLACS may rerun the last completed shot when fallback repeat is enabled.
+- When a shot finishes, BLACS does not talk to lyse directly. Instead it enqueues a completion notification to runmanager and retries delivery in the background until successful or BLACS exits.
+- BLACS shows a GUI counter for the number of completed-shot notifications still buffered for runmanager.
+- The completed-shot notification buffer is runtime only and is explicitly not restored across BLACS restarts.
 
 8. BLACS plugin compatibility
 - Keep `BLACS['experiment_queue']` as a compatibility alias in v1.
@@ -132,9 +139,22 @@
   - `delete_repeated_shots`
 - Repeated-shot detection should use explicit HDF5 repeat metadata instead of filename heuristics.
 
-9. Docs
+9. Runmanager lyse ownership
+- Move the lyse submission widget and submission loop into runmanager.
+- Place the lyse widget under `View shot(s)` in the runmanager top controls.
+- Add a runmanager remote API method `notify_shot_complete(filepath)` so BLACS can report completed shots to runmanager.
+- Runmanager converts the agnostic/shared-drive filepath back to a local path before queueing it for lyse submission.
+- Runmanager configuration persists only tracked lyse widget settings:
+  - lyse hostname
+  - whether analysis submission is enabled
+- Runmanager does not treat transient lyse retry state as saved configuration state.
+- `ports.lyse` remains a required runmanager labconfig entry; there is no silent fallback port.
+
+10. Docs
 - Update BLACS docs for pull-based execution.
+- Update BLACS docs to remove BLACS-owned lyse submission and queue descriptions that no longer apply.
 - Update runmanager docs for queue ownership, TOML globals, migration behavior, compile modes, and empty-queue policies.
+- Update runmanager docs for runmanager-owned lyse submission.
 - Keep this file aligned with actual implementation.
 
 ## Public Data Shape
@@ -172,11 +192,24 @@ expansion = "outer"
   - standard-shot generation
   - empty-queue policies
   - queue ZMQ API behavior
+  - `notify_shot_complete` remote API behavior
+  - lyse widget startup and shutdown behavior
+  - tracked analysis settings persist without transient retry state affecting dirty-config detection
 - `blacs`:
   - pull next shot, validate, ack
   - single direct-load override shot
   - fallback repeat on empty queue and communication failure
+  - completed-shot notifications buffer and retry correctly when runmanager is unavailable
+  - notification-buffer counter updates correctly
+  - notification buffer is not restored after BLACS restart
   - plugin compatibility surface
 - Cross-repo:
   - runmanager queue and BLACS executor interoperate end-to-end
   - all repeated or fallback shots get fresh HDF5 files
+  - completed shots flow BLACS -> runmanager -> lyse without BLACS talking to lyse directly
+
+## Implemented Follow-Ups
+- BLACS local override UI was reduced to a compact file field plus browse button, and the old queue-pane remnants were removed from the BLACS layout.
+- Runmanager queue-tab layout was cleaned up so the queue widget fills the page cleanly and the queue actions use the widget context menu rather than inline move buttons.
+- BLACS no longer contains the old `analysis_submission` module or UI; those stale files were removed after lyse ownership moved to runmanager.
+- Runmanager `AnalysisSubmission` startup was fixed so backing attributes are initialized before property setters run during widget construction.
