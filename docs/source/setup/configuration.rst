@@ -12,15 +12,15 @@ Further details on how to use each component can be found in the documentation f
    The `-c/--compile` flag will compile the example connection table (which only defines dummy instruments and will always run).
    Using both of these arguments will allow all suite components to load with a minimal configuration that is readily customised.
 
-The *labconfig.ini* File
-------------------------
+The *labconfig.toml* File
+-------------------------
 
 Before running any **labscript-suite** components after a fresh installation, you should first open the automatically generated labconfig file and modify some of its default settings to match your needs.
 This file is found in the user space `labscript-suite/labconfig` directory created by the `labscript-profile-create` command of the installation process.
 This directory is, by default, located at the top level of the user's directory.
 The labconfig file will be named after your system's name.
-So if your system hostname is `heisenberg`, the labconfig file will be named `heisenberg.ini`.
-This directory will also contain a copy of the default labconfig file as `example.ini`.
+So if your system hostname is `heisenberg`, the labconfig file will be named `heisenberg.toml`.
+This directory will also contain a copy of the default labconfig file as `example.toml`.
 Only changes made to the labconfig file named after your system will have any effect.
 
 The current contents of the default labconfig file are available :doc:`here <labscript-utils:labconfig>`.
@@ -143,4 +143,4 @@ To generate a zprocess secret key, navigate to the `labconfig` directory and run
 
     C:\Users\wkheisenberg\labscript-suite\labconfig> python -m zprocess.makesecret
 
-then update the `[security]` section of the `labconfig.ini` to use the new file.
+then update the `[security]` section of the `labconfig.toml` to use the new file.
