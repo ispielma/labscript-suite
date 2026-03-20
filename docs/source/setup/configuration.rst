@@ -28,7 +28,9 @@ Only changes made to the labconfig file named after your system will have any ef
    During legacy ``.ini`` to ``.toml`` migration, ``example.toml`` is used as the
    type guide for known labconfig keys. It should therefore contain examples of all
    valid labconfig keys, even if some of them are only relevant to a subset of
-   installations.
+   installations. Custom keys that are not represented in ``example.toml`` are
+   still migrated, but they remain strings rather than being coerced to richer
+   TOML types.
 
 The current contents of the default labconfig file are available :doc:`here <labscript-utils:labconfig>`.
 
