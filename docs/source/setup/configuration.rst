@@ -23,6 +23,13 @@ So if your system hostname is `heisenberg`, the labconfig file will be named `he
 This directory will also contain a copy of the default labconfig file as `example.toml`.
 Only changes made to the labconfig file named after your system will have any effect.
 
+.. note::
+
+   During legacy ``.ini`` to ``.toml`` migration, ``example.toml`` is used as the
+   type guide for known labconfig keys. It should therefore contain examples of all
+   valid labconfig keys, even if some of them are only relevant to a subset of
+   installations.
+
 The current contents of the default labconfig file are available :doc:`here <labscript-utils:labconfig>`.
 
 Configuration
@@ -31,13 +38,13 @@ Configuration
 Many of the options in this file do not need to be changed, but a few things should be changed before running any **labscript-suite** module the first time.
 Once the appropriate changes have been made, save the file.
 
-* `[DEFAULT]`
+* `[default]`
 
   * `apparatus_name` should be set to a name describing the experiment.
      It should not have spaces.
      This name is used to create sub-directories within the various **labscript-suite** directories where the various shots and scripts will be stored.
      If these sub-directories do not exist, the suite will create them and populate them with the bare minimum of requirements to function.
-     The relative paths for the items are described by the other keys in the `DEFAULT` section, and can be modified if desired.
+     The relative paths for the items are described by the other keys in the `default` section, and can be modified if desired.
      Note that while multiple apparatus names can exist for the same installation, only one can be used at a time.
      In order for a changed `apparatus_name` to take effect, you will need to reload **labscript-suite** components.
 
