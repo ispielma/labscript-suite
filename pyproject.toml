@@ -56,7 +56,7 @@ docs = [
     "myst_parser==4.0.1",
     "sphinxcontrib-bibtex==2.6.2",
 ]
-pyqt = ["PyQt5"]
+pyqt = ["PyQt6"]
 spincore = ["spinapi"]
 nidaqmx = ["PyDAQmx"]
 nivision = ["PyNIVision"]
